@@ -7,9 +7,10 @@ const BOOST_KEY = 'looptubeBoostEnabled'; // Storage key for volume setting
 const VIDEO_KEY_PREFIX = 'looptube:video:';
 const MOBILE_ACTIVATION_DEDUPE_MS = 350;
 const isMobile = location.hostname.includes('m.youtube.com');
-
+const VOLUME_KEY = 'looptubeVolume';
 const state = {
     enabled: true,
+    volumeLevel: 100,
     boostEnabled: false, // Tracks whether 200% volume boost is active
     player: null,
     video: null,
@@ -51,37 +52,36 @@ function applyVolumeBoost() {
             const AudioContextClass = globalThis.AudioContext || globalThis.webkitAudioContext;
             const ctx = new AudioContextClass();
             const source = ctx.createMediaElementSource(vid);
-            
             const compressor = ctx.createDynamicsCompressor();
-            compressor.threshold.value = 0;
-            compressor.knee.value = 0;
-            compressor.ratio.value = 20;
-            compressor.attack.value = 0.001;
-            compressor.release.value = 0.1;
-
             const gainNode = ctx.createGain();
 
-            // Connect graph nodes
             source.connect(compressor);
             compressor.connect(gainNode);
             gainNode.connect(ctx.destination);
 
-            // Cache the references directly on the DOM element to persist across navigation
             vid._audioPipeline = { ctx, source, compressor, gainNode };
         } catch (e) {
-            console.error("LoopTube: Volume boost node pipeline failed to initialize:", e);
+            console.error("LoopTube: Volume boost node pipeline failed:", e);
             return;
         }
     }
 
     const pipeline = vid._audioPipeline;
     if (pipeline) {
-        if (state.boostEnabled) {
-            pipeline.gainNode.gain.value = 3.5; // Boost to 200%
-            pipeline.compressor.threshold.value = -1; // Engage safety net to stop clipping
+        const multiplier = state.volumeLevel / 100;
+
+        if (multiplier > 1.0) {
+            pipeline.gainNode.gain.value = multiplier; 
+            // Keep the brickwall limiter active to catch peaks at any boosted volume
+            pipeline.compressor.threshold.value = -1;
+            pipeline.compressor.ratio.value = 20;
+            pipeline.compressor.knee.value = 0;
+            pipeline.compressor.attack.value = 0.001;
+            pipeline.compressor.release.value = 0.1;
         } else {
-            pipeline.gainNode.gain.value = 1.0; // Reset to normal
-            pipeline.compressor.threshold.value = 0; // Transparent bypass
+            pipeline.gainNode.gain.value = 1.0; 
+            pipeline.compressor.threshold.value = 0; 
+            pipeline.compressor.ratio.value = 1; 
         }
 
         if (pipeline.ctx.state === 'suspended') {
@@ -917,9 +917,8 @@ function handleMessage(msg, sender, sendRes) {
         return false;
     }
 
-    // Handles volume updates dispatched directly from your popup UI
-    if (msg.action === 'toggleVolumeBoost') {
-        state.boostEnabled = Boolean(msg.boostEnabled);
+    if (msg.action === 'updateVolume') {
+        state.volumeLevel = parseInt(msg.volume, 10);
         applyVolumeBoost();
         sendRes({ ok: true });
         return false;
@@ -933,8 +932,8 @@ function handleStorageChange(changes, area) {
     if (changes[ENABLED_KEY]) {
         setEnabled(Boolean(changes[ENABLED_KEY].newValue));
     }
-    if (changes[BOOST_KEY]) {
-        state.boostEnabled = Boolean(changes[BOOST_KEY].newValue);
+    if (changes[VOLUME_KEY]) {
+        state.volumeLevel = parseInt(changes[VOLUME_KEY].newValue, 10);
         applyVolumeBoost();
     }
 }
@@ -942,9 +941,9 @@ function handleStorageChange(changes, area) {
 api.runtime.onMessage.addListener(handleMessage);
 api.storage.onChanged.addListener(handleStorageChange);
 
-storageGet({ [ENABLED_KEY]: true, [BOOST_KEY]: false }).then((data) => {
+storageGet({ [ENABLED_KEY]: true, [VOLUME_KEY]: 100 }).then((data) => {
     state.enabled = Boolean(data[ENABLED_KEY]);
-    state.boostEnabled = Boolean(data[BOOST_KEY]);
+    state.volumeLevel = parseInt(data[VOLUME_KEY], 10);
     if (state.enabled) {
         if (document.body) start();
         else window.addEventListener('DOMContentLoaded', start, { once: true });

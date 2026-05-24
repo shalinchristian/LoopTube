@@ -40,9 +40,9 @@
         <input id="enabled" type="checkbox">
     </div>
     
-    <div class="toggle-row">
-        <label for="boost">Enable 200% Volume Boost</label>
-        <input id="boost" type="checkbox">
+    <div class="toggle-row" style="flex-wrap: wrap;">
+        <label for="volumeSlider" style="width: 100%;">Volume Boost: <span id="volumeLabel">100%</span></label>
+        <input id="volumeSlider" type="range" min="100" max="350" value="100" step="10" style="width: 100%; margin-top: 8px;">
     </div>
 
     <script src="popup.js"></script>
