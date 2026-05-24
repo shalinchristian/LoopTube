@@ -1,8 +1,11 @@
 const api = globalThis.browser || chrome;
 const usingBrowserApi = typeof globalThis.browser !== 'undefined';
+
 const ENABLED_KEY = 'looptubeEnabled';
+const BOOST_KEY = 'looptubeBoostEnabled';
 
 const checkbox = document.getElementById('enabled');
+const boostCheckbox = document.getElementById('boost');
 
 function storageGet(defaults) {
     if (usingBrowserApi) {
@@ -54,31 +57,44 @@ function sendMessage(tabId, message) {
     });
 }
 
-async function notifyCurrentTab(enabled) {
+async function notifyCurrentTab(messagePayload) {
     const tabs = await queryActiveTab();
     const tab = tabs[0];
 
     if (!tab || !tab.id) return;
 
     try {
-        await sendMessage(tab.id, {
-            action: 'toggleExtension',
-            enabled
-        });
+        await sendMessage(tab.id, messagePayload);
     } catch {
     }
 }
 
 async function loadState() {
-    const data = await storageGet({ [ENABLED_KEY]: true });
+    const data = await storageGet({ [ENABLED_KEY]: true, [BOOST_KEY]: false });
     checkbox.checked = Boolean(data[ENABLED_KEY]);
+    boostCheckbox.checked = Boolean(data[BOOST_KEY]);
 }
 
+// Original Loop Toggle
 checkbox.addEventListener('change', async () => {
     const enabled = checkbox.checked;
 
     await storageSet({ [ENABLED_KEY]: enabled });
-    await notifyCurrentTab(enabled);
+    await notifyCurrentTab({
+        action: 'toggleExtension',
+        enabled: enabled
+    });
+});
+
+// New 200% Volume Boost Toggle
+boostCheckbox.addEventListener('change', async () => {
+    const boostEnabled = boostCheckbox.checked;
+
+    await storageSet({ [BOOST_KEY]: boostEnabled });
+    await notifyCurrentTab({
+        action: 'toggleVolumeBoost',
+        boostEnabled: boostEnabled
+    });
 });
 
 loadState();

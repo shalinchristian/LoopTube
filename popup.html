@@ -6,33 +6,44 @@
     <title>LoopTube</title>
     <style>
         body {
-            width: 240px;
+            width: 260px;
             margin: 0;
-            padding: 14px;
+            padding: 16px;
             background: #0f0f0f;
             color: #f1f1f1;
             font-family: Arial, sans-serif;
             font-size: 14px;
         }
 
-        label {
+        .toggle-row {
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 12px;
+            margin-bottom: 14px;
         }
 
-        input {
+        .toggle-row:last-child {
+            margin-bottom: 0;
+        }
+
+        input[type="checkbox"] {
             width: 18px;
             height: 18px;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
-    <label for="enabled">
-        <span>Enable Loop Button on YouTube</span>
+    <div class="toggle-row">
+        <label for="enabled">Enable Loop Button</label>
         <input id="enabled" type="checkbox">
-    </label>
+    </div>
+    
+    <div class="toggle-row">
+        <label for="boost">Enable 200% Volume Boost</label>
+        <input id="boost" type="checkbox">
+    </div>
 
     <script src="popup.js"></script>
 </body>

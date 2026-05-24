@@ -3,12 +3,14 @@ const usingBrowserApi = typeof globalThis.browser !== 'undefined';
 
 const BUTTON_ID = 'looptube-btn';
 const ENABLED_KEY = 'looptubeEnabled';
+const BOOST_KEY = 'looptubeBoostEnabled'; // Storage key for volume setting
 const VIDEO_KEY_PREFIX = 'looptube:video:';
 const MOBILE_ACTIVATION_DEDUPE_MS = 350;
 const isMobile = location.hostname.includes('m.youtube.com');
 
 const state = {
     enabled: true,
+    boostEnabled: false, // Tracks whether 200% volume boost is active
     player: null,
     video: null,
     controls: null,
@@ -34,6 +36,58 @@ function storageGet(defaults) {
     return new Promise((res) => {
         api.storage.local.get(defaults, res);
     });
+}
+
+// Low-distortion Web Audio Engine
+function applyVolumeBoost() {
+    if (!state.enabled) return;
+    
+    const vid = getVideo();
+    if (!vid) return;
+
+    // Build the audio processing graph if it doesn't exist for this specific video element
+    if (!vid._audioPipeline) {
+        try {
+            const AudioContextClass = globalThis.AudioContext || globalThis.webkitAudioContext;
+            const ctx = new AudioContextClass();
+            const source = ctx.createMediaElementSource(vid);
+            
+            const compressor = ctx.createDynamicsCompressor();
+            compressor.threshold.value = 0;
+            compressor.knee.value = 0;
+            compressor.ratio.value = 20;
+            compressor.attack.value = 0.001;
+            compressor.release.value = 0.1;
+
+            const gainNode = ctx.createGain();
+
+            // Connect graph nodes
+            source.connect(compressor);
+            compressor.connect(gainNode);
+            gainNode.connect(ctx.destination);
+
+            // Cache the references directly on the DOM element to persist across navigation
+            vid._audioPipeline = { ctx, source, compressor, gainNode };
+        } catch (e) {
+            console.error("LoopTube: Volume boost node pipeline failed to initialize:", e);
+            return;
+        }
+    }
+
+    const pipeline = vid._audioPipeline;
+    if (pipeline) {
+        if (state.boostEnabled) {
+            pipeline.gainNode.gain.value = 3.5; // Boost to 200%
+            pipeline.compressor.threshold.value = -1; // Engage safety net to stop clipping
+        } else {
+            pipeline.gainNode.gain.value = 1.0; // Reset to normal
+            pipeline.compressor.threshold.value = 0; // Transparent bypass
+        }
+
+        if (pipeline.ctx.state === 'suspended') {
+            pipeline.ctx.resume().catch(() => {});
+        }
+    }
 }
 
 function isVisMobileVid(video) {
@@ -440,7 +494,11 @@ function ensureMobileButton() {
 function watchVideo(vid) {
     const id = getVideoId();
 
-    if (vid === state.video && id === state.videoId) return;
+    if (vid === state.video && id === state.videoId) {
+        // Enforce volume engine matching current state even if elements remain identical
+        applyVolumeBoost();
+        return;
+    }
     if (isMobile) bgPlay.detachVideoListeners();
     if (state.videoObserver) state.videoObserver.disconnect();
 
@@ -463,6 +521,8 @@ function watchVideo(vid) {
         setLoop(getSavedLoop(id), false);
     }
 
+    // Auto-apply volume parameters to newly caught tracking target
+    applyVolumeBoost();
     updateButton();
 }
 
@@ -821,6 +881,13 @@ function stop() {
     state.adObserver = null;
     state.observedTarget = null;
 
+    // Direct bypass cleanup on extension deactivation
+    const vid = getVideo();
+    if (vid && vid._audioPipeline) {
+        vid._audioPipeline.gainNode.gain.value = 1.0;
+        vid._audioPipeline.compressor.threshold.value = 0;
+    }
+
     getButton()?.remove();
     resetCache();
 }
@@ -842,23 +909,42 @@ function setEnabled(val) {
 }
 
 function handleMessage(msg, sender, sendRes) {
-    if (!msg || msg.action !== 'toggleExtension') return false;
+    if (!msg) return false;
 
-    setEnabled(Boolean(msg.enabled));
-    sendRes({ ok: true });
+    if (msg.action === 'toggleExtension') {
+        setEnabled(Boolean(msg.enabled));
+        sendRes({ ok: true });
+        return false;
+    }
+
+    // Handles volume updates dispatched directly from your popup UI
+    if (msg.action === 'toggleVolumeBoost') {
+        state.boostEnabled = Boolean(msg.boostEnabled);
+        applyVolumeBoost();
+        sendRes({ ok: true });
+        return false;
+    }
+
     return false;
 }
 
 function handleStorageChange(changes, area) {
-    if (area !== 'local' || !changes[ENABLED_KEY]) return;
-    setEnabled(Boolean(changes[ENABLED_KEY].newValue));
+    if (area !== 'local') return;
+    if (changes[ENABLED_KEY]) {
+        setEnabled(Boolean(changes[ENABLED_KEY].newValue));
+    }
+    if (changes[BOOST_KEY]) {
+        state.boostEnabled = Boolean(changes[BOOST_KEY].newValue);
+        applyVolumeBoost();
+    }
 }
 
 api.runtime.onMessage.addListener(handleMessage);
 api.storage.onChanged.addListener(handleStorageChange);
 
-storageGet({ [ENABLED_KEY]: true }).then((data) => {
+storageGet({ [ENABLED_KEY]: true, [BOOST_KEY]: false }).then((data) => {
     state.enabled = Boolean(data[ENABLED_KEY]);
+    state.boostEnabled = Boolean(data[BOOST_KEY]);
     if (state.enabled) {
         if (document.body) start();
         else window.addEventListener('DOMContentLoaded', start, { once: true });
