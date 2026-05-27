@@ -27,9 +27,9 @@ Built to stay lightweight, responsive, and visually consistent with YouTube’s 
 
 ---
 
-## What's New in v1.2.0
+## What's New in v1.2.1
 
-* Added a 200% VLC-style volume boost engine for quiet uploads
+* Added a 350% VLC-style volume boost 
 * Integrated a Web Audio API dynamic limiter to prevent speaker clipping
 * Added a popup UI toggle to control the audio pipeline
 * Improved background playback stability for mobile users
@@ -40,7 +40,7 @@ Built to stay lightweight, responsive, and visually consistent with YouTube’s 
 
 * Native-style loop button integrated into YouTube controls
 * Toggle loop instantly with one click
-* Safe 200% volume boost using dynamic brickwall compression
+* Safe 350% volume boost using dynamic brickwall compression
 * Keyboard shortcut (**L**) on desktop
 * Full mobile YouTube support
 * Background playback support on mobile Firefox
