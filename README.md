@@ -13,11 +13,6 @@ A lightweight Firefox extension that adds a native-feeling loop button directly 
 ---
 
 <p align="center">
-  <img src="docs/screenshots/img3.jpg" alt="LoopTube Demo 1" width="80%">
-  <img src="docs/screenshots/img4.jpg" alt="LoopTube Demo 2" width="80%">
-</p>
-
-<p align="center">
   <img src="docs/screenshots/looptube-popup-light.png" alt="LoopTube popup, light mode" width="260">
   &nbsp;
   <img src="docs/screenshots/looptube-popup-dark.png" alt="LoopTube popup, dark mode" width="260">
