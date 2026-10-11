@@ -3,7 +3,7 @@
 [![Get it on Firefox Add-ons](https://img.shields.io/badge/Get_it_on-Firefox_Add--ons-FF7139?style=for-the-badge&logo=firefoxbrowser&logoColor=white)](https://addons.mozilla.org/en-US/firefox/addon/looptube/)
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Version](https://img.shields.io/badge/version-1.3.2-green.svg)
+![Version](https://img.shields.io/badge/version-1.3.3-green.svg)
 ![Platform](https://img.shields.io/badge/platform-Firefox-lightgrey)
 ![Support](https://img.shields.io/badge/support-Desktop%20%2B%20Mobile-orange)
 ![Visitors](https://visitor-badge.laobi.icu/badge?page_id=shalinchristian.looptube)
