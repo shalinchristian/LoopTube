@@ -3,16 +3,16 @@ const usingBrowserApi = typeof globalThis.browser !== 'undefined';
 
 const BUTTON_ID = 'looptube-btn';
 const ENABLED_KEY = 'looptubeEnabled';
-const BOOST_KEY = 'looptubeBoostEnabled'; // Storage key for volume setting
 const VIDEO_KEY_PREFIX = 'looptube:video:';
 const MOBILE_ACTIVATION_DEDUPE_MS = 350;
 const isMobile = location.hostname.includes('m.youtube.com');
 const VOLUME_KEY = 'looptubeVolume';
+const LOOP_INDEX_KEY = 'looptube:index';
+const MAX_SAVED_LOOPS = 200;
 const state = {
     enabled: true,
     bgPlayEnabled: true, // background playback stays on even when the loop button is disabled
     volumeLevel: 100,
-    boostEnabled: false, // Tracks whether 200% volume boost is active
     player: null,
     video: null,
     controls: null,
@@ -26,7 +26,7 @@ const state = {
     videoObserver: null,
     adObserver: null,
     retryTimeout: null,
-    mobileInterval: null,
+    fullscreenHandler: null,
     mobileInputHandlersInstalled: false,
     lastMobileActivation: 0
 };

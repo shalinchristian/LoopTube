@@ -2,6 +2,7 @@ const bgPlay = {
     inited: false,
     interval: null,
     wasPlaying: false,
+    closing: false,
     eventsBound: false,
     userPaused: false,
     suspendByVisibility: false,
@@ -15,9 +16,25 @@ const bgPlay = {
         if (this.inited) return;
         this.inited = true;
 
-        this.injectSpoofer();
         this.bindEvents();
         this.startKeepAlive();
+
+        // Like Brave: background play only covers a locked screen or a switched app.
+        // When Firefox closes the page (quit, tab closed, app removed from recents),
+        // pagehide/freeze fire and playback stops instead of being resumed.
+        this.boundPageClose = () => this.handlePageClose();
+        window.addEventListener('pagehide', this.boundPageClose, true);
+        document.addEventListener('freeze', this.boundPageClose, true);
+    },
+
+    handlePageClose() {
+        this.closing = true;
+        if (this.interval) {
+            clearInterval(this.interval);
+            this.interval = null;
+        }
+        const video = this.attachedVideo || state.video || getVideo();
+        if (video && !video.paused) video.pause();
     },
 
     syncState() {
@@ -62,55 +79,6 @@ const bgPlay = {
         this.videoPauseHandler = null;
         this.videoPlayHandler = null;
     },
-    injectSpoofer() {
-        if (document.getElementById('looptube-spoofer')) return;
-
-        const script = document.createElement('script');
-        script.id = 'looptube-spoofer';
-        script.textContent = `
-            (() => {
-                const isActive = () => document.documentElement.dataset.bgPlay === 'true';
-
-                // 1. Preserve and override descriptors safely
-                const props = [
-                    { obj: Document.prototype, prop: 'hidden', trueVal: false },
-                    { obj: Document.prototype, prop: 'webkitHidden', trueVal: false },
-                    { obj: Document.prototype, prop: 'visibilityState', trueVal: 'visible' },
-                    { obj: Document.prototype, prop: 'webkitVisibilityState', trueVal: 'visible' }
-                ];
-
-                props.forEach(({ obj, prop, trueVal }) => {
-                    const orig = Object.getOwnPropertyDescriptor(obj, prop);
-                    if (!orig) return;
-
-                    Object.defineProperty(document, prop, {
-                        configurable: true,
-                        enumerable: true,
-                        get() {
-                            if (isActive()) return trueVal;
-                            return orig.get ? orig.get.call(this) : orig.value;
-                        }
-                    });
-                });
-
-                // 2. Main-world event blocking
-                const stopEvt = (e) => {
-                    if (isActive() && e.isTrusted) {
-                        e.stopImmediatePropagation();
-                        e.stopPropagation();
-                    }
-                };
-
-                ['visibilitychange', 'webkitvisibilitychange', 'pagehide', 'blur'].forEach(evt => {
-                    document.addEventListener(evt, stopEvt, true);
-                    window.addEventListener(evt, stopEvt, true);
-                });
-            })();
-        `;
-        (document.head || document.documentElement).appendChild(script);
-        script.remove();
-    },
-
     handleEvent(e) {
         if (state.bgPlayEnabled && e.isTrusted) {
             e.stopImmediatePropagation();
@@ -120,7 +88,7 @@ const bgPlay = {
 
     bindEvents() {
         if (this.eventsBound) return;
-        const evts = ['visibilitychange', 'webkitvisibilitychange', 'pagehide', 'blur'];
+        const evts = ['visibilitychange', 'webkitvisibilitychange', 'blur'];
 
         // Bind functions directly to preserve references
         this.boundHandleEvent = this.handleEvent.bind(this);
@@ -159,7 +127,7 @@ const bgPlay = {
     unbindEvents() {
         if (!this.eventsBound || !this.boundHandleEvent) return;
 
-        const evts = ['visibilitychange', 'webkitvisibilitychange', 'pagehide', 'blur'];
+        const evts = ['visibilitychange', 'webkitvisibilitychange', 'blur'];
 
         evts.forEach(evt => {
             if (this.boundVisibilitySync) {
@@ -177,7 +145,7 @@ const bgPlay = {
         if (this.interval) clearInterval(this.interval);
 
         this.interval = setInterval(() => {
-            if (!state.bgPlayEnabled) return;
+            if (!state.bgPlayEnabled || this.closing) return;
             // Background play is independent of the loop button toggle, so
             // find the video ourselves when the loop feature is switched off.
             const video = state.video || getVideo();

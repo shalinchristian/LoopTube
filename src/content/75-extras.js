@@ -125,8 +125,13 @@ const extras = {
     }
 };
 
-setInterval(() => {
+// Runs on every YouTube navigation, whether or not the loop button is enabled.
+function onExtrasNavigation() {
     extras.applyVideoVolume();
     // With the loop button off, watchVideo() isn't running, so keep the boost attached to new videos here.
-    if (!state.enabled) applyVolumeBoost();
-}, 1000);
+    if (!state.enabled) setTimeout(applyVolumeBoost, 500);
+}
+
+window.addEventListener('yt-navigate-finish', onExtrasNavigation);
+window.addEventListener('yt-page-data-updated', onExtrasNavigation);
+onExtrasNavigation();

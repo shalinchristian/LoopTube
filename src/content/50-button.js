@@ -18,8 +18,8 @@ function createButton() {
     btn.id = BUTTON_ID;
     btn.type = 'button';
     btn.className = 'ytp-button looptube-button';
-    btn.title = 'Loop (L)';
-    btn.setAttribute('aria-label', 'Loop (L)');
+    btn.title = 'Loop (Shift+L)';
+    btn.setAttribute('aria-label', 'Loop (Shift+L)');
     btn.setAttribute('aria-pressed', 'false');
 
     // Custom JS property to track authenticity
@@ -157,22 +157,21 @@ function ensureMobileButton() {
 
     updateButton();
 
-    if (!state.mobileInterval) {
-        state.mobileInterval = setInterval(() => {
-            const currentBtn = document.getElementById(BUTTON_ID);
+    syncMobileFullscreen();
 
-            if (!currentBtn || !currentBtn.isConnected) {
-                clearInterval(state.mobileInterval);
-                state.mobileInterval = null;
-                ensureMobileButton();
-                return;
-            }
-
-            const isFull = !!document.fullscreenElement || !!document.webkitFullscreenElement;
-            currentBtn.style.opacity = isFull ? '0' : '1';
-            currentBtn.style.setProperty('pointer-events', isFull ? 'none' : 'auto', 'important');
-        }, 300);
+    if (!state.fullscreenHandler) {
+        state.fullscreenHandler = syncMobileFullscreen;
+        document.addEventListener('fullscreenchange', syncMobileFullscreen);
+        document.addEventListener('webkitfullscreenchange', syncMobileFullscreen);
     }
+}
+
+function syncMobileFullscreen() {
+    const btn = getButton();
+    if (!btn) return;
+    const isFull = !!document.fullscreenElement || !!document.webkitFullscreenElement;
+    btn.style.opacity = isFull ? '0' : '1';
+    btn.style.setProperty('pointer-events', isFull ? 'none' : 'auto', 'important');
 }
 
 function watchVideo(vid) {

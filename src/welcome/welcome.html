@@ -25,40 +25,36 @@
       <path class="play" d="M86 72v56l46-28z"/>
     </svg>
   </div>
-  <p class="eyebrow reveal">LoopTube 1.3 is installed</p>
+  <p class="eyebrow reveal" id="ver">LoopTube is installed</p>
   <h1 class="reveal">Play it again.<br><span class="grad">And again.</span></h1>
-  <p class="lede reveal">A loop button right inside the YouTube player, plus every playback control you've wished YouTube had.</p>
+  <p class="lede reveal">A loop button inside the YouTube player, plus A&ndash;B repeat, speed, volume boost and a sleep timer. All in one place.</p>
   <div class="ctas reveal">
     <a class="btn primary" href="https://www.youtube.com" target="_blank" rel="noopener">Try it on YouTube</a>
-    <a class="btn ghost" href="#features">See what's new &darr;</a>
+    <a class="btn ghost" href="#features">See the features &darr;</a>
   </div>
 </header>
 
-<section class="showcase reveal">
-  <picture>
-    <source srcset="popup-dark.png" media="(prefers-color-scheme: dark)">
-    <img src="popup-light.png" alt="The LoopTube popup" width="300">
-  </picture>
-  <p class="caption">Everything lives in one popup. Click the LoopTube icon in your toolbar.</p>
-</section>
-
 <section id="features" class="features">
   <div class="feature reveal">
-    <div class="f-text"><span class="tag">Loop</span><h2>One tap. Endless replay.</h2><p>The loop button sits right in the player controls, so it feels like part of YouTube. Press <kbd>L</kbd> on desktop. Every video remembers its own setting.</p></div>
+    <div class="f-text"><span class="tag">Loop</span><h2>One tap. Endless replay.</h2><p>The loop button sits right in the player controls, so it feels like part of YouTube. Press <kbd>Shift</kbd>+<kbd>L</kbd> on desktop. Every video remembers its own setting.</p></div>
     <div class="f-art art-loop"><svg class="loop-art" viewBox="0 0 200 200" aria-hidden="true"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff6b5e"/><stop offset=".55" stop-color="#ff2d55"/><stop offset="1" stop-color="#bf5af2"/></linearGradient><marker id="ah" viewBox="0 0 10 10" refX="2" refY="5" markerUnits="userSpaceOnUse" markerWidth="30" markerHeight="30" orient="auto"><path d="M0 0L10 5L0 10z" fill="#ff2d55"/></marker></defs><g class="spinner"><path d="M100 46A54 54 0 1 1 53.2 73" fill="none" stroke="url(#lg)" stroke-width="16" stroke-linecap="round" marker-end="url(#ah)"/></g><path d="M90 80v40l32-20z" class="tri"/></svg></div>
   </div>
   <div class="feature flip reveal">
-    <div class="f-text"><span class="tag new">New</span><h2>Loop just the good part.</h2><p>Hit <b>Set A</b> where it starts and <b>Set B</b> where it ends. Perfect for learning a riff, a dance move, or a single line of a lecture.</p></div>
-    <div class="f-art art-ab"><div class="timeline"><i class="seg"></i><b class="pin a">A</b><b class="pin b">B</b></div></div>
+    <div class="f-text"><span class="tag new">New in 1.4</span><h2>Controls, one tap away.</h2><p>A floating button sits on every video. Tap it to loop, set A&ndash;B, change speed, boost volume or start the sleep timer without leaving the player. Drag it anywhere, or turn it off in the popup.</p></div>
+    <div class="f-art art-fab" aria-hidden="true"><div class="mini"><i class="chip on">Loop</i><i class="chip">1&times;</i><i class="chip on">1.5&times;</i><i class="chip">2&times;</i><i class="slider"><b></b></i></div><span class="fab"><img src="icons/icon48.png" alt=""></span></div>
   </div>
   <div class="feature reveal">
+    <div class="f-text"><span class="tag">A&ndash;B Repeat</span><h2>Loop just the good part.</h2><p>Hit <b>Set A</b> where it starts and <b>Set B</b> where it ends. Perfect for learning a riff, a dance move, or a single line of a lecture.</p></div>
+    <div class="f-art art-ab"><div class="timeline"><i class="seg"></i><b class="pin a">A</b><b class="pin b">B</b></div></div>
+  </div>
+  <div class="feature flip reveal">
     <div class="f-text"><span class="tag">Volume Boost</span><h2>Up to 350% louder.</h2><p>A built-in limiter keeps quiet videos clear instead of crackly. Turn on <b>Remember for This Video</b> and it keeps that level just for that one.</p></div>
     <div class="f-art art-vol"><div class="bars"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
   </div>
   <div class="tiles reveal">
-    <div class="tile"><span class="tag new">New</span><h3>Speed</h3><p class="big">0.5&times; &ndash; 3&times;</p><p>Slow it down to learn. Speed it up to skim.</p></div>
-    <div class="tile"><span class="tag new">New</span><h3>Sleep Timer</h3><p class="big">15&ndash;90 min</p><p>Fall asleep to music. It pauses for you.</p></div>
-    <div class="tile"><span class="tag">Mobile</span><h3>Background Play</h3><p class="big">Keeps playing</p><p>On Firefox for Android, audio continues with the screen off or in another app.</p></div>
+    <div class="tile"><span class="tag">Speed</span><h3>Playback Speed</h3><p class="big">0.5&times; &ndash; 3&times;</p><p>Slow it down to learn. Speed it up to skim.</p></div>
+    <div class="tile"><span class="tag">Timer</span><h3>Sleep Timer</h3><p class="big">15&ndash;90 min</p><p>Pauses the video for you, with a live countdown.</p></div>
+    <div class="tile"><span class="tag">Mobile</span><h3>Background Play</h3><p class="big">Keeps playing</p><p>On Firefox for Android, audio keeps going with the screen locked or in another app.</p></div>
   </div>
 </section>
 
@@ -67,7 +63,7 @@
   <ol>
     <li><span>1</span><p><b>Pin it.</b> Open the puzzle-piece menu in Firefox and pin LoopTube to your toolbar.</p></li>
     <li><span>2</span><p><b>Play anything.</b> Open a YouTube video and look for the loop button in the player.</p></li>
-    <li><span>3</span><p><b>Fine-tune.</b> Click the toolbar icon for A&ndash;B loop, speed, boost, and the sleep timer.</p></li>
+    <li><span>3</span><p><b>Fine-tune.</b> Tap the floating button on the video, or click the toolbar icon, for A&ndash;B, speed, boost and the sleep timer.</p></li>
   </ol>
 </section>
 

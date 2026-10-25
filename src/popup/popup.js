@@ -3,6 +3,7 @@ const usingBrowserApi = typeof globalThis.browser !== 'undefined';
 
 const ENABLED_KEY = 'looptubeEnabled';
 const VOLUME_KEY = 'looptubeVolume';
+const FAB_KEY = 'looptubeFab';
 
 const checkbox = document.getElementById('enabled');
 const volumeSlider = document.getElementById('volumeSlider');
@@ -107,15 +108,23 @@ function render(status) {
     volumeSlider.value = status.volume;
     volumeLabel.textContent = status.volume + '%';
 
-    if (status.sleepEndsAt) {
-        const mins = Math.max(1, Math.round((status.sleepEndsAt - Date.now()) / 60000));
-        sleepLabel.textContent = 'Pausing in about ' + mins + ' min.';
-        sleepSelect.value = String(status.sleepMinutes);
-    } else {
-        sleepLabel.textContent = '';
-        sleepSelect.value = '0';
-    }
+    sleepEndsAt = status.sleepEndsAt || 0;
+    sleepSelect.value = sleepEndsAt ? String(status.sleepMinutes) : '0';
+    tickSleep();
 }
+
+// Live countdown for the sleep timer, updated every second while the popup is open.
+let sleepEndsAt = 0;
+function tickSleep() {
+    const left = Math.round((sleepEndsAt - Date.now()) / 1000);
+    if (!sleepEndsAt || left <= 0) {
+        sleepLabel.textContent = '';
+        if (sleepEndsAt) { sleepEndsAt = 0; sleepSelect.value = '0'; }
+        return;
+    }
+    sleepLabel.textContent = 'Pausing in ' + formatTime(left);
+}
+setInterval(tickSleep, 1000);
 
 async function send(payload) {
     render(await notifyCurrentTab(payload));
@@ -127,5 +136,10 @@ document.getElementById('clearAB').addEventListener('click', () => send({ action
 speedSelect.addEventListener('change', () => send({ action: 'setSpeed', rate: speedSelect.value }));
 sleepSelect.addEventListener('change', () => send({ action: 'setSleep', minutes: sleepSelect.value }));
 rememberBox.addEventListener('change', () => send({ action: 'rememberVolume', on: rememberBox.checked }));
+
+// Floating button on/off (on by default)
+const fabBox = document.getElementById('fab');
+storageGet({ [FAB_KEY]: true }).then((d) => { fabBox.checked = Boolean(d[FAB_KEY]); });
+fabBox.addEventListener('change', () => storageSet({ [FAB_KEY]: fabBox.checked }));
 
 loadState().then(() => send({ action: 'getStatus' }));

@@ -1,8 +1,8 @@
 {
     "name": "LoopTube",
-    "version": "1.3.2",
+    "version": "0.0.0",
     "manifest_version": 3,
-    "description": "Adds loop button inside YouTube player controls",
+    "description": "Loop button in the YouTube player, plus A-B repeat, speed control, sleep timer, volume boost up to 350% and background play on mobile.",
     "permissions": [
         "storage"
     ],
@@ -13,7 +13,8 @@
                 "required": [
                     "none"
                 ]
-            }
+            },
+            "strict_min_version": "128.0"
         }
     },
     "action": {
@@ -29,8 +30,7 @@
         {
             "matches": [
                 "*://www.youtube.com/*",
-                "*://m.youtube.com/*",
-                "*://youtu.be/*"
+                "*://m.youtube.com/*"
             ],
             "css": [
                 "style.css"
@@ -39,6 +39,16 @@
                 "content.js"
             ],
             "run_at": "document_idle"
+        },
+        {
+            "matches": [
+                "*://m.youtube.com/*"
+            ],
+            "js": [
+                "page-background-play.js"
+            ],
+            "run_at": "document_start",
+            "world": "MAIN"
         }
     ],
     "icons": {

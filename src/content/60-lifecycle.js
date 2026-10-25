@@ -55,7 +55,8 @@ function isTyping(e) {
 function handleKeydown(e) {
     if (isTyping(e) || e.ctrlKey || e.altKey || e.metaKey) return;
 
-    if (e.key.toLowerCase() === 'l') {
+    // Plain L is YouTube's own "forward 10 seconds", so LoopTube uses Shift+L.
+    if (e.shiftKey && e.key.toLowerCase() === 'l') {
         e.preventDefault();
         e.stopPropagation();
         toggleLoop();
@@ -77,8 +78,9 @@ function resetCache() {
         state.adObserver = null;
     }
 
-    if (state.mobileInterval) {
-        clearInterval(state.mobileInterval);
-        state.mobileInterval = null;
+    if (state.fullscreenHandler) {
+        document.removeEventListener('fullscreenchange', state.fullscreenHandler);
+        document.removeEventListener('webkitfullscreenchange', state.fullscreenHandler);
+        state.fullscreenHandler = null;
     }
 }

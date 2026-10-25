@@ -6,10 +6,25 @@ function getSavedLoop(id) {
     }
 }
 
+// Only videos with loop turned on are stored, and the list is capped so it can't grow forever.
 function saveLoop() {
     if (!state.enabled || state.ignoringLoopChange || !state.video || !state.videoId || isAdShowing()) return;
     try {
-        localStorage.setItem(VIDEO_KEY_PREFIX + state.videoId, String(state.video.loop));
+        const key = VIDEO_KEY_PREFIX + state.videoId;
+        let index = JSON.parse(localStorage.getItem(LOOP_INDEX_KEY) || '[]').filter((id) => id !== state.videoId);
+
+        if (state.video.loop) {
+            localStorage.setItem(key, 'true');
+            index.push(state.videoId);
+        } else {
+            localStorage.removeItem(key);
+        }
+
+        while (index.length > MAX_SAVED_LOOPS) {
+            localStorage.removeItem(VIDEO_KEY_PREFIX + index.shift());
+        }
+
+        localStorage.setItem(LOOP_INDEX_KEY, JSON.stringify(index));
     } catch { }
 }
 

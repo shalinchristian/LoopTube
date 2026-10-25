@@ -5,7 +5,12 @@ fs.rmSync(dist, { recursive: true, force: true }); fs.mkdirSync(dist);
 const dir = path.join(src, 'content');
 const parts = fs.readdirSync(dir).filter(f => f.endsWith('.js')).sort();
 fs.writeFileSync(path.join(dist, 'content.js'), parts.map(f => fs.readFileSync(path.join(dir, f), 'utf8')).join(''));
-for (const [from, to] of [['manifest.json','manifest.json'],['content/style.css','style.css'],['popup/popup.html','popup.html'],['popup/popup.js','popup.js'],['popup/popup.css','popup.css'],['background.js','background.js'],['welcome/welcome.html','welcome.html'],['welcome/welcome.css','welcome.css'],['welcome/welcome.js','welcome.js'],['welcome/popup-light.png','popup-light.png'],['welcome/popup-dark.png','popup-dark.png']])
+for (const [from, to] of [['content/style.css','style.css'],['popup/popup.html','popup.html'],['popup/popup.js','popup.js'],['popup/popup.css','popup.css'],['background.js','background.js'],['page/background-play.js','page-background-play.js'],['welcome/welcome.html','welcome.html'],['welcome/welcome.css','welcome.css'],['welcome/welcome.js','welcome.js']])
   fs.copyFileSync(path.join(src, from), path.join(dist, to));
+// package.json is the only place the version lives.
+const { version } = require(path.join(root, 'package.json'));
+const manifest = JSON.parse(fs.readFileSync(path.join(src, 'manifest.json'), 'utf8'));
+manifest.version = version;
+fs.writeFileSync(path.join(dist, 'manifest.json'), JSON.stringify(manifest, null, 4));
 fs.cpSync(path.join(root, 'icons'), path.join(dist, 'icons'), { recursive: true });
 console.log('Built dist/ from ' + parts.length + ' content modules');
