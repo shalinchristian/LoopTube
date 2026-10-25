@@ -2,24 +2,6 @@
   <img src="icons/icon128.png" width="96" alt="LoopTube icon">
 </p>
 
-<<<<<<< HEAD
-[![Get it on Firefox Add-ons](https://img.shields.io/badge/Get_it_on-Firefox_Add--ons-FF7139?style=for-the-badge&logo=firefoxbrowser&logoColor=white)](https://addons.mozilla.org/en-US/firefox/addon/looptube/)
-
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Version](https://img.shields.io/badge/version-1.3.3-green.svg)
-![Platform](https://img.shields.io/badge/platform-Firefox-lightgrey)
-![Support](https://img.shields.io/badge/support-Desktop%20%2B%20Mobile-orange)
-![Visitors](https://visitor-badge.laobi.icu/badge?page_id=shalinchristian.looptube)
-
-A lightweight Firefox extension that adds a native-feeling loop button directly inside the YouTube video player, plus a studio-grade volume booster for quiet videos.
-
----
-
-<p align="center">
-  <img src="docs/screenshots/looptube-popup-light.png" alt="LoopTube popup, light mode" width="260">
-  &nbsp;
-  <img src="docs/screenshots/looptube-popup-dark.png" alt="LoopTube popup, dark mode" width="260">
-=======
 <h1 align="center">LoopTube</h1>
 
 <p align="center">
@@ -31,8 +13,8 @@ A lightweight Firefox extension that adds a native-feeling loop button directly 
   <a href="https://addons.mozilla.org/en-US/firefox/addon/looptube/"><img src="https://img.shields.io/amo/v/looptube?label=Firefox%20Add-ons&logo=firefoxbrowser&color=FF7139" alt="Firefox Add-ons"></a>
   <a href="https://addons.mozilla.org/en-US/firefox/addon/looptube/"><img src="https://img.shields.io/amo/users/looptube?color=FF7139" alt="Users"></a>
   <a href="https://github.com/shalinchristian/LoopTube/actions/workflows/lint.yml"><img src="https://github.com/shalinchristian/LoopTube/actions/workflows/lint.yml/badge.svg" alt="Lint"></a>
+  <img src="https://visitor-badge.laobi.icu/badge?page_id=shalinchristian.looptube" alt="Visitors">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT license"></a>
->>>>>>> f8e832a (LoopTube 1.4.0: floating controls, better background play)
 </p>
 
 <p align="center">
