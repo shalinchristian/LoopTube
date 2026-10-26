@@ -417,8 +417,21 @@ const fab = {
                 this.close(true);
             }
         }, true);
+        // Screen off or app in the background: stop the panel's timers and animations so
+        // nothing keeps waking the page while audio plays. They pick up again on return.
+        // With background play on, the page script swallows the real visibilitychange and
+        // sends 'looptube-visibility' instead. document.hidden here is always the real value.
+        document.addEventListener('visibilitychange', () => this.onVisibility());
+        document.addEventListener('looptube-visibility', () => this.onVisibility());
         document.addEventListener('fullscreenchange', () => this.sync());
-        window.addEventListener('resize', () => { this.dock(true); this.layoutPanel(); });
+        // A screen lock can resize the viewport (landscape video, portrait lock screen). Do the
+        // layout at most once a frame, and not at all while hidden; onVisibility catches up.
+        let resizeQueued = false;
+        window.addEventListener('resize', () => {
+            if (resizeQueued || document.hidden) return;
+            resizeQueued = true;
+            fabNextFrame(() => { resizeQueued = false; if (!document.hidden) { this.dock(true); this.layoutPanel(); } });
+        });
         let scrollQueued = false;
         window.addEventListener('scroll', () => {
             if (scrollQueued) return;
@@ -445,6 +458,9 @@ const fab = {
             const lr = like && like.getBoundingClientRect();
             if (lr && lr.height > 0 && lr.bottom > top && lr.top < H) top = lr.bottom;
             z.minCy = top + 8 + R;
+            // Shorts (and a fullscreen-like player) cover the whole screen, so there is no room
+            // below it. Then the button and panel go over the player instead of off the bottom.
+            if (z.minCy > z.maxCy - this.size) { z.playerBottom = 0; z.minCy = M + R; }
         }
         if (z.minCy > z.maxCy) z.minCy = z.maxCy;
         return z;
@@ -684,7 +700,8 @@ const fab = {
         this.layoutPanel(this.fy.to);
         this.panel.scrollTop = 0;
         fabPanelAnim.open(this.animCtx());
-        this.ticker = setInterval(() => this.tickSleep(), 1000);
+        clearInterval(this.ticker);
+        this.ticker = document.hidden ? null : setInterval(() => this.tickSleep(), 1000);
         try {
             const s = history.state;
             const base = s && typeof s === 'object' ? JSON.parse(JSON.stringify(s)) : {};
@@ -721,6 +738,25 @@ const fab = {
         this.ticker = null;
         fabPanelAnim.finish(false);
         this.panel.classList.remove('show');
+    },
+
+    onVisibility() {
+        if (document.hidden) {
+            clearInterval(this.ticker);
+            this.ticker = null;
+            fabPanelAnim.finish(true);
+            this.fx.jump(this.fx.to); this.fy.jump(this.fy.to);
+            this.lift.jump(0); this.grow.jump(1);
+            this.panelY = this.fy.x;
+            this.render();
+        } else {
+            if (!this.drag && !this.running) this.dock(true);
+            this.layoutPanel();
+            if (this.isOpen && !this.ticker) {
+                this.ticker = setInterval(() => this.tickSleep(), 1000);
+                this.refresh();
+            }
+        }
     },
 
     tickSleep() {

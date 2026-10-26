@@ -12,5 +12,8 @@ const { version } = require(path.join(root, 'package.json'));
 const manifest = JSON.parse(fs.readFileSync(path.join(src, 'manifest.json'), 'utf8'));
 manifest.version = version;
 fs.writeFileSync(path.join(dist, 'manifest.json'), JSON.stringify(manifest, null, 4));
-fs.cpSync(path.join(root, 'icons'), path.join(dist, 'icons'), { recursive: true });
+// Only the sizes the extension uses. icons/icon.png is the large source artwork and stays out of the package.
+fs.mkdirSync(path.join(dist, 'icons'));
+for (const f of fs.readdirSync(path.join(root, 'icons')).filter(f => /^icon\d+\.png$/.test(f)))
+  fs.copyFileSync(path.join(root, 'icons', f), path.join(dist, 'icons', f));
 console.log('Built dist/ from ' + parts.length + ' content modules');
