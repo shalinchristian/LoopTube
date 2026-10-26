@@ -2,7 +2,12 @@
 // While background play is on, it reports the page as visible so YouTube doesn't pause
 // when the screen locks or the tab is switched. The content script sets data-bg-play.
 (() => {
-    const isActive = () => document.documentElement.dataset.bgPlay === 'true';
+    // Only step in while something is actually playing. With nothing playing, YouTube sees
+    // the real visibility and can idle normally in the background.
+    const isPlaying = () => Array.from(document.querySelectorAll('video')).some((v) => !v.paused && !v.ended);
+    const isActive = () => document.documentElement.dataset.bgPlay === 'true' && isPlaying();
+    // Only page-level blur means "user left"; blur on a search or comment box must reach YouTube.
+    const isPageTarget = (t) => t === window || t === document;
 
     const props = [
         { prop: 'hidden', activeVal: false },
@@ -26,7 +31,7 @@
     });
 
     const stopEvt = (e) => {
-        if (isActive() && e.isTrusted) {
+        if (e.isTrusted && isPageTarget(e.target) && isActive()) {
             e.stopImmediatePropagation();
         }
     };

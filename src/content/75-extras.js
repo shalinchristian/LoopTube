@@ -133,5 +133,6 @@ function onExtrasNavigation() {
 }
 
 window.addEventListener('yt-navigate-finish', onExtrasNavigation);
+window.addEventListener('state-navigateend', onExtrasNavigation);
 window.addEventListener('yt-page-data-updated', onExtrasNavigation);
 onExtrasNavigation();

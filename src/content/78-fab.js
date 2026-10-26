@@ -221,8 +221,6 @@ const fab = {
         }, true);
         document.addEventListener('fullscreenchange', () => this.sync());
         window.addEventListener('resize', () => this.applyPos());
-        window.addEventListener('yt-navigate-finish', () => this.sync());
-        window.addEventListener('popstate', () => this.sync());
         new MutationObserver(() => this.applyTheme())
             .observe(document.documentElement, { attributes: true, attributeFilter: ['dark', 'darker-dark-theme'] });
         matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => this.applyTheme());
@@ -352,6 +350,15 @@ storageGet({ [FAB_KEY]: true, [FAB_POS_KEY]: null }).then((d) => {
     if (document.body) fab.sync();
     else window.addEventListener('DOMContentLoaded', () => fab.sync(), { once: true });
 });
+
+// Navigation listeners live here, not in bind(): bind() only runs once the button is built,
+// and the button is only built on a video page. Starting on search or home would never hook them.
+
+const fabOnNav = () => fab.sync();
+window.addEventListener('yt-navigate-finish', fabOnNav);
+window.addEventListener('state-navigateend', fabOnNav);
+window.addEventListener('popstate', fabOnNav);
+// m.youtube.com doesn't reliably fire a navigation event, so also catch path changes directly.
 
 api.storage.onChanged.addListener((changes, area) => {
     if (area !== 'local' || !changes[FAB_KEY]) return;

@@ -1,6 +1,6 @@
 {
   "name": "looptube",
-  "version": "1.4.2",
+  "version": "1.4.3",
   "private": true,
   "description": "Open-source Firefox extension that adds loop, A-B repeat, speed, sleep timer, volume boost and background play to YouTube",
   "license": "MIT",

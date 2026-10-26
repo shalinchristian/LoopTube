@@ -9,6 +9,7 @@ function start() {
     document.addEventListener('keydown', handleKeydown, true);
     window.addEventListener('yt-navigate-finish', handleNavigation);
     window.addEventListener('yt-page-data-updated', handleNavigation);
+    window.addEventListener('state-navigateend', handleNavigation); // m.youtube.com
 
     observeDom();
     run();
@@ -23,6 +24,7 @@ function stop() {
     document.removeEventListener('keydown', handleKeydown, true);
     window.removeEventListener('yt-navigate-finish', handleNavigation);
     window.removeEventListener('yt-page-data-updated', handleNavigation);
+    window.removeEventListener('state-navigateend', handleNavigation);
     removeMobileInputHandlers();
 
     if (state.domObserver) state.domObserver.disconnect();

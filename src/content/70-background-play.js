@@ -80,6 +80,10 @@ const bgPlay = {
         this.videoPlayHandler = null;
     },
     handleEvent(e) {
+        // Leave element blur alone (search box, comments). Only page-level events while playing.
+        if (e.target !== window && e.target !== document) return;
+        const video = this.attachedVideo || state.video || getVideo();
+        if (!video || video.paused) return;
         if (state.bgPlayEnabled && e.isTrusted) {
             e.stopImmediatePropagation();
             e.stopPropagation();
@@ -100,10 +104,13 @@ const bgPlay = {
                     clearTimeout(this.visibilityTimer);
                 }
 
+                // Only a pause in the first moment after leaving is YouTube's own visibility pause.
+                // A later pause (another app or game taking audio, a call) must be respected.
+                this.resumedThisHide = false;
                 this.visibilityTimer = setTimeout(() => {
                     this.suspendByVisibility = false;
                     this.visibilityTimer = null;
-                }, 1200);
+                }, 400);
             } else {
                 this.suspendByVisibility = false;
 
@@ -146,32 +153,22 @@ const bgPlay = {
 
         this.interval = setInterval(() => {
             if (!state.bgPlayEnabled || this.closing) return;
+            // Only work on video pages.
+            if (!/^\/(watch|shorts\/)/.test(location.pathname)) { this.wasPlaying = false; return; }
             // Background play is independent of the loop button toggle, so
             // find the video ourselves when the loop feature is switched off.
             const video = state.video || getVideo();
             if (!video) return;
             this.attachVideoListeners(video);
 
-            const isReallyHidden = document.hidden;
-
-            if (!isReallyHidden) {
+            // While the app is open, just remember whether it was playing; never touch playback.
+            if (!document.hidden) {
                 this.wasPlaying = !video.paused;
                 return;
             }
 
-            if (
-                isReallyHidden &&
-                this.wasPlaying &&
-                video.paused &&
-                !video.ended &&
-                this.userPaused === false
-            ) {
-                const p = video.play();
-
-                if (p && typeof p.catch === 'function') {
-                    p.catch(() => { });
-                }
-            }
+            // In the background, never call play(): YouTube can't see the page hidden while a video
+            // plays, so any pause here comes from the user, a call or another app (a game) and must stick.
         }, 800);
     },
 

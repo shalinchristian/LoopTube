@@ -26,7 +26,11 @@ function scheduleRun() {
     if (!state.enabled || state.scheduled) return;
 
     state.scheduled = true;
-    requestAnimationFrame(run);
+    // requestAnimationFrame callbacks can be dropped (hidden tabs, mobile YouTube page swaps).
+    // If that happens, `scheduled` stays true and the button never comes back, so a timeout backs it up.
+    const fire = () => { if (state.scheduled) run(); };
+    requestAnimationFrame(fire);
+    setTimeout(fire, 250);
 }
 
 function observeDom() {

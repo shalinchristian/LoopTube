@@ -9,6 +9,9 @@ function getSavedLoop(id) {
 // Only videos with loop turned on are stored, and the list is capped so it can't grow forever.
 function saveLoop() {
     if (!state.enabled || state.ignoringLoopChange || !state.video || !state.videoId || isAdShowing()) return;
+    // On mobile the same <video> is reused, and YouTube can reset loop after the URL changes but before
+    // LoopTube catches up. Don't write that reset under the previous video's ID.
+    if (getVideoId() !== state.videoId) return;
     try {
         const key = VIDEO_KEY_PREFIX + state.videoId;
         let index = JSON.parse(localStorage.getItem(LOOP_INDEX_KEY) || '[]').filter((id) => id !== state.videoId);
