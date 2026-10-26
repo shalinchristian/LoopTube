@@ -190,7 +190,25 @@ function watchVideo(vid) {
 
     if (isMobile) bgPlay.attachVideoListeners(vid);
 
+    // On mobile the same <video> is reused, and YouTube resets `loop` when it loads the next
+    // source. Right after a switch, put the saved value back instead of saving YouTube's reset.
+    state.switchedAt = Date.now();
+    if (state.loopRestoreVideo && state.loopRestoreHandler) {
+        state.loopRestoreVideo.removeEventListener('loadedmetadata', state.loopRestoreHandler);
+    }
+    state.loopRestoreVideo = vid;
+    state.loopRestoreHandler = () => {
+        if (state.video === vid && state.videoId === id && !isAdShowing()) setLoop(getSavedLoop(id), false);
+    };
+    vid.addEventListener('loadedmetadata', state.loopRestoreHandler);
+
     state.videoObserver = new MutationObserver(() => {
+        if (Date.now() - state.switchedAt < 1500 && !isAdShowing()) {
+            const saved = getSavedLoop(id);
+            if (vid.loop !== saved) setLoop(saved, false);
+            updateButton();
+            return;
+        }
         saveLoop();
         updateButton();
     });
