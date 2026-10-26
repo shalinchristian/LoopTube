@@ -22,6 +22,30 @@
             <label for="fab">Floating Button</label>
             <input id="fab" type="checkbox" class="switch">
         </div>
+        <div id="fabOptions">
+            <div class="divider"></div>
+            <div class="row"><span id="fabSizeLabel">Button Size</span></div>
+            <div class="segmented" id="fabSize" role="group" aria-labelledby="fabSizeLabel">
+                <button type="button" data-size="40" aria-pressed="false">Small</button>
+                <button type="button" data-size="52" aria-pressed="true">Medium</button>
+                <button type="button" data-size="64" aria-pressed="false">Large</button>
+            </div>
+            <div class="divider"></div>
+            <button id="menuToggle" type="button" class="disclosure" aria-expanded="false" aria-controls="menuPanel">
+                <span>Menu Items <span class="value" id="menuCount">&middot; 5 of 5</span></span>
+                <svg class="chevron" viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M4.5 2.5 8 6l-3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <div class="collapse" id="menuPanel" inert>
+                <ul class="checklist" id="menuList" aria-label="Floating menu items">
+                    <li><button type="button" data-item="loop" aria-pressed="true">Loop<svg class="tick" viewBox="0 0 14 14" width="14" height="14" aria-hidden="true"><path d="M2.5 7.5 5.5 10.5 11.5 3.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></li>
+                    <li><button type="button" data-item="volume" aria-pressed="true">Volume Boost<svg class="tick" viewBox="0 0 14 14" width="14" height="14" aria-hidden="true"><path d="M2.5 7.5 5.5 10.5 11.5 3.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></li>
+                    <li><button type="button" data-item="ab" aria-pressed="true">A&ndash;B Loop<svg class="tick" viewBox="0 0 14 14" width="14" height="14" aria-hidden="true"><path d="M2.5 7.5 5.5 10.5 11.5 3.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></li>
+                    <li><button type="button" data-item="speed" aria-pressed="true">Speed<svg class="tick" viewBox="0 0 14 14" width="14" height="14" aria-hidden="true"><path d="M2.5 7.5 5.5 10.5 11.5 3.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></li>
+                    <li><button type="button" data-item="sleep" aria-pressed="true">Sleep Timer<svg class="tick" viewBox="0 0 14 14" width="14" height="14" aria-hidden="true"><path d="M2.5 7.5 5.5 10.5 11.5 3.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></li>
+                </ul>
+            </div>
+            <p class="note" id="menuNote" role="status"></p>
+        </div>
     </section>
 
     <h2>Volume</h2>
@@ -68,6 +92,11 @@
         </div>
         <p class="note" id="sleepLabel"></p>
     </section>
+
+    <footer>
+        <p id="ublockNote" hidden><a id="ublockLink" class="foot-link" href="https://addons.mozilla.org/firefox/addon/ublock-origin/" target="_blank" rel="noopener">Seeing ads? LoopTube works best with uBlock Origin</a></p>
+        <p><a id="coffeeLink" class="foot-link" href="https://buymeacoffee.com/shalin7" target="_blank" rel="noopener">Loving LoopTube? Buy me a coffee</a></p>
+    </footer>
 
     <script src="popup.js"></script>
 </body>

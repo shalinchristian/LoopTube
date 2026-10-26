@@ -12,6 +12,8 @@ function saveLoop() {
     // On mobile the same <video> is reused, and YouTube can reset loop after the URL changes but before
     // LoopTube catches up. Don't write that reset under the previous video's ID.
     if (getVideoId() !== state.videoId) return;
+    // A loop turning off right after a switch is YouTube's reset, not the user. Never save it.
+    if (!state.video.loop && Date.now() - state.switchedAt < LOOP_SWITCH_WINDOW_MS) return;
     try {
         const key = VIDEO_KEY_PREFIX + state.videoId;
         let index = JSON.parse(localStorage.getItem(LOOP_INDEX_KEY) || '[]').filter((id) => id !== state.videoId);
@@ -74,6 +76,7 @@ function toggleLoop() {
 
     if (!state.enabled || !state.video || isAdShowing()) return;
 
+    state.switchedAt = 0; // the person chose this, so it is saved even right after a switch
     setLoop(!state.video.loop, true);
 }
 

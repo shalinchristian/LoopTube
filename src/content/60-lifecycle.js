@@ -1,6 +1,11 @@
 function handleAds() {
     const adShowing = isAdShowing();
 
+    if (adShowing && !state.sawAdSaved) {
+        state.sawAdSaved = true;
+        api.storage.local.set({ [SAW_AD_KEY]: true });
+    }
+
     if (adShowing && state.video && state.video.loop) {
         setLoop(false, false);
     }
@@ -81,6 +86,9 @@ function resetCache() {
         state.adObserver.disconnect();
         state.adObserver = null;
     }
+    // Without this, observeDom() sees the same player and skips re-attaching the ad observer,
+    // so the saved loop isn't put back when an ad ends after a navigation.
+    state.observedTarget = null;
 
     if (state.fullscreenHandler) {
         document.removeEventListener('fullscreenchange', state.fullscreenHandler);

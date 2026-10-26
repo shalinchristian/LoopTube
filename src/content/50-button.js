@@ -191,19 +191,28 @@ function watchVideo(vid) {
     if (isMobile) bgPlay.attachVideoListeners(vid);
 
     // On mobile the same <video> is reused, and YouTube resets `loop` when it loads the next
-    // source. Right after a switch, put the saved value back instead of saving YouTube's reset.
+    // source, sometimes well after the URL changed. Each time a source starts loading, the
+    // switch window starts again, and the saved value is put back as the video gets going.
     state.switchedAt = Date.now();
     if (state.loopRestoreVideo && state.loopRestoreHandler) {
-        state.loopRestoreVideo.removeEventListener('loadedmetadata', state.loopRestoreHandler);
+        for (const t of LOOP_RESTORE_EVENTS) state.loopRestoreVideo.removeEventListener(t, state.loopRestoreHandler);
     }
     state.loopRestoreVideo = vid;
-    state.loopRestoreHandler = () => {
-        if (state.video === vid && state.videoId === id && !isAdShowing()) setLoop(getSavedLoop(id), false);
+    state.loopRestoreHandler = (ev) => {
+        if (!state.enabled || (state.video && state.video !== vid)) return;
+        // Going back can load the previous video before LoopTube's own check notices the new URL
+        // (or while a navigation has just cleared the cache), so catch up here.
+        if (!state.video || getVideoId() !== state.videoId) {
+            if (getVideo() === vid) watchVideo(vid);
+            return;
+        }
+        if (ev.type === 'loadstart' || ev.type === 'loadedmetadata') state.switchedAt = Date.now();
+        if (!isAdShowing() && vid.loop !== getSavedLoop(id)) setLoop(getSavedLoop(id), false);
     };
-    vid.addEventListener('loadedmetadata', state.loopRestoreHandler);
+    for (const t of LOOP_RESTORE_EVENTS) vid.addEventListener(t, state.loopRestoreHandler);
 
     state.videoObserver = new MutationObserver(() => {
-        if (Date.now() - state.switchedAt < 1500 && !isAdShowing()) {
+        if (Date.now() - state.switchedAt < LOOP_SWITCH_WINDOW_MS && !isAdShowing()) {
             const saved = getSavedLoop(id);
             if (vid.loop !== saved) setLoop(saved, false);
             updateButton();

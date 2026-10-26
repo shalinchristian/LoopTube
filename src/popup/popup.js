@@ -139,7 +139,105 @@ rememberBox.addEventListener('change', () => send({ action: 'rememberVolume', on
 
 // Floating button on/off (on by default)
 const fabBox = document.getElementById('fab');
-storageGet({ [FAB_KEY]: true }).then((d) => { fabBox.checked = Boolean(d[FAB_KEY]); });
-fabBox.addEventListener('change', () => storageSet({ [FAB_KEY]: fabBox.checked }));
+const fabOptions = document.getElementById('fabOptions');
+function renderFab(on) {
+    fabBox.checked = on;
+    fabOptions.hidden = !on;
+}
+storageGet({ [FAB_KEY]: true }).then((d) => renderFab(Boolean(d[FAB_KEY])));
+fabBox.addEventListener('change', () => {
+    renderFab(fabBox.checked);
+    storageSet({ [FAB_KEY]: fabBox.checked });
+});
+
+// Floating button size: 40, 52 or 64 px (52 by default). The content script reads it from storage.
+const FAB_SIZE_KEY = 'fabSize';
+const FAB_SIZES = [40, 52, 64];
+const sizeButtons = [...document.querySelectorAll('#fabSize button')];
+function renderSize(size) {
+    if (!FAB_SIZES.includes(size)) size = 52;
+    for (const b of sizeButtons) b.setAttribute('aria-pressed', String(Number(b.dataset.size) === size));
+}
+storageGet({ [FAB_SIZE_KEY]: 52 }).then((d) => renderSize(Number(d[FAB_SIZE_KEY])));
+for (const b of sizeButtons) {
+    b.addEventListener('click', () => {
+        const size = Number(b.dataset.size);
+        renderSize(size);
+        storageSet({ [FAB_SIZE_KEY]: size });
+    });
+}
+
+// Which tools appear in the floating menu. A missing item counts as on.
+const MENU_ITEMS_KEY = 'menuItems';
+const MENU_ITEM_IDS = ['loop', 'volume', 'ab', 'speed', 'sleep'];
+const menuToggle = document.getElementById('menuToggle');
+const menuPanel = document.getElementById('menuPanel');
+const menuCount = document.getElementById('menuCount');
+const menuNote = document.getElementById('menuNote');
+const itemButtons = [...document.querySelectorAll('#menuList button')];
+let menuItems = {};
+
+function normalizeMenuItems(value) {
+    const src = value && typeof value === 'object' ? value : {};
+    const out = {};
+    for (const id of MENU_ITEM_IDS) out[id] = src[id] !== false;
+    return out;
+}
+
+function renderMenuItems(value) {
+    menuItems = normalizeMenuItems(value);
+    let on = 0;
+    for (const b of itemButtons) {
+        const checked = menuItems[b.dataset.item];
+        if (checked) on++;
+        b.setAttribute('aria-pressed', String(checked));
+    }
+    menuCount.textContent = '\u00b7 ' + on + ' of ' + MENU_ITEM_IDS.length;
+    menuNote.textContent = on ? '' : 'Floating button hidden \u2014 no items selected';
+}
+
+storageGet({ [MENU_ITEMS_KEY]: {} }).then((d) => renderMenuItems(d[MENU_ITEMS_KEY]));
+for (const b of itemButtons) {
+    b.addEventListener('click', () => {
+        const next = { ...menuItems, [b.dataset.item]: !menuItems[b.dataset.item] };
+        renderMenuItems(next);
+        storageSet({ [MENU_ITEMS_KEY]: menuItems });
+    });
+}
+
+menuToggle.addEventListener('click', () => {
+    const open = menuToggle.getAttribute('aria-expanded') !== 'true';
+    menuToggle.setAttribute('aria-expanded', String(open));
+    menuPanel.classList.toggle('open', open);
+    menuPanel.inert = !open;
+});
+
+// The uBlock tip only shows once the content script has seen an ad (it sets adSeen).
+const AD_SEEN_KEY = 'adSeen';
+const ublockNote = document.getElementById('ublockNote');
+function renderAdSeen(seen) { ublockNote.hidden = seen !== true; }
+storageGet({ [AD_SEEN_KEY]: false }).then((d) => renderAdSeen(d[AD_SEEN_KEY]));
+
+// Keep the popup in sync if storage changes while it is open.
+api.storage.onChanged.addListener((changes, area) => {
+    if (area !== 'local') return;
+    if (changes[AD_SEEN_KEY]) renderAdSeen(changes[AD_SEEN_KEY].newValue);
+    if (changes[MENU_ITEMS_KEY]) renderMenuItems(changes[MENU_ITEMS_KEY].newValue);
+    if (changes[FAB_SIZE_KEY]) renderSize(Number(changes[FAB_SIZE_KEY].newValue));
+    if (changes[FAB_KEY]) renderFab(changes[FAB_KEY].newValue !== false);
+});
+
+// Footer links open in a new tab; links inside a popup don't always open on their own.
+function openTab(url) {
+    const done = () => window.close();
+    if (usingBrowserApi) return api.tabs.create({ url }).then(done, done);
+    api.tabs.create({ url }, done);
+}
+for (const link of document.querySelectorAll('footer a')) {
+    link.addEventListener('click', (e) => {
+        e.preventDefault();
+        openTab(link.href);
+    });
+}
 
 loadState().then(() => send({ action: 'getStatus' }));
